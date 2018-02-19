@@ -1,4 +1,10 @@
-.slider {
+body {
+    margin: 20px 200px;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.slider-wrapper {
     overflow: hidden;
     margin: auto;
 }
