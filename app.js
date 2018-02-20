@@ -1,80 +1,25 @@
-//     if (options.dots) {
-//       const dots = document.createElement('div');
-      
-//       dots.classList.add('dots');
-//       wrapper.appendChild(dots);
-
-//       for (let i = 0; i < slideCount; i++) {
-//         const dot = document.createElement('span');
-//         dot.classList.add('dot');
-//         dots.appendChild(dot);
-//       }
-
-//       const dotBtn = [...document.getElementsByClassName('dot')];
-//       const firstDot = dotBtn[0];
-
-//       const removeClass = () => {
-//         const x = [...dots.children];
-
-//         x.map((d) => {
-//           d.classList.remove('active');
-//         })
-//       }
-
-//       firstDot.classList.add('active');
-
-//       dotBtn.map((dot, i) => {
-//         dot.addEventListener('click', () => {
-//           removeClass();
-//           base = (- sliderWidth * i);
-//           cont.style.transform = `translateX(${base}px)`;
-//           dot.classList.add('active');
-//         })
-//       })
-
-//       if (options.arrows) {
-//         const la = document.getElementsByClassName('arrow-left');
-//         const ra = document.getElementsByClassName('arrow-right');
-//         let dotIndex = 0;
-
-//         la[0].addEventListener('click', (e) => {
-//           if (dotIndex <= 0)           {
-//             e.preventDefault();
-//           } else {
-//             removeClass();
-//             dotIndex --;
-//             dotBtn[dotIndex].classList.add('active');
-//           }
-//         });
-
-//         ra[0].addEventListener('click', (e) => {
-//           if (dotIndex >= slideCount)           {
-//             e.preventDefault();
-//           } else {
-//             removeClass();
-//             dotIndex ++;
-//             dotBtn[dotIndex].classList.add('active');
-//           }
-//         });
-//       }
-//     }
-//   });
-// }
-
 class Slider {
   constructor(container, options) {
     const defaultOptions = {
       arrows: true,
+      arrowSelector: 'button',
+      arrowPrevClass: 'arrow-prev',
+      arrowNextClass: 'arrow-next',
+      arrowPrevText: 'Previous',
+      arrowNextText: 'Next',
       dots: true,
       slideSpeed: 2000,
       infinite: true,
     }
-    let typeContainer;
-    const finalOptions = Object.assign(defaultOptions, options);
+    this.finalOptions = Object.assign(defaultOptions, options);
+    this.wrapper = document.createElement('div');
 
     this.checkTypeOfSelector(container);
     this.buildSlider();
-    this.buildArrows(finalOptions);
+    this.buildArrows();
+    this.arrowsHandler();
+    this.buildDots();
+    this.dotsHandler();
   }
 
   checkTypeOfSelector(container) {
@@ -97,58 +42,140 @@ class Slider {
 
   buildSlider() {
     this.typeContainer.map((cont) => {
-      const wrapper = document.createElement('div');
-      const child = [...cont.children];
-      const slideCount = child.length;
-      const sliderWidth = cont.offsetWidth;
+      this.child = [...cont.children];
+      this.sliderWidth = cont.offsetWidth;
+      this.slideCount = this.child.length;
 
-      cont.parentNode.insertBefore(wrapper, cont).classList.add('slider-wrapper');
-      wrapper.appendChild(cont);
+      cont.parentNode.insertBefore(this.wrapper, cont).classList.add('slider-wrapper');
+      this.wrapper.appendChild(cont);
 
-      wrapper.style.width = `${sliderWidth}px`;
-      cont.style.width = `${sliderWidth * slideCount}px`;
+      this.wrapper.style.width = `${this.sliderWidth}px`;
+      cont.style.width = `${this.sliderWidth * this.slideCount}px`;
 
-      for (let i = 0; i < child.length; i++) {
-        child[i].classList.add('slide');
+      for (let i = 0; i < this.child.length; i++) {
+        this.child[i].classList.add('slide');
       };
-
-      // cont.style.transition = `${options.slideSpeed}ms transform ease`;
+      cont.style.transition = `${this.finalOptions.slideSpeed}ms transform ease`;
     })
   };
 
-  buildArrows(finalOptions) {
-    if (finalOptions.arrows) {
-      const sliderWrapper = document.getElementsByClassName('slider-wrapper');
+  buildArrows() {
+    if (this.finalOptions.arrows) {
       const arrows = document.createElement('div');
-      const arrowLeft = document.createElement('button');
-      const arrowRight = document.createElement('button');
-      // let base = 0;
+      this.arrowLeft = document.createElement(this.finalOptions.arrowSelector);
+      this.arrowRight = document.createElement(this.finalOptions.arrowSelector);
             
       arrows.classList.add('arrows');
-      arrows.appendChild(arrowLeft).classList.add('arrow-left');
-      arrows.appendChild(arrowRight).classList.add('arrow-right');
+      arrows.appendChild(this.arrowLeft).classList.add(this.finalOptions.arrowPrevClass);
+      arrows.appendChild(this.arrowRight).classList.add(this.finalOptions.arrowNextClass);
 
-      sliderWrapper[0].appendChild(arrows);
+      this.arrowLeft.innerText = this.finalOptions.arrowPrevText;
+      this.arrowRight.innerText = this.finalOptions.arrowNextText;
 
-      // console.log(sliderWrapper);
+      this.wrapper.appendChild(arrows);
+    }
+  };
 
-      // arrowLeft.addEventListener('click', (e) => {
-      //   if (base >= 0) {
-      //     e.preventDefault();
-      //   } else {
-      //     base = base + sliderWidth;
-      //   }
-      //   cont.style.transform = `translateX(${base}px)`;
-      // });
+  arrowsHandler() {
+    if(this.finalOptions.arrows) {
+      this.base = 0;
+      this.child[0].classList.add('active');
 
-      // arrowRight.addEventListener('click', (e) => {
-      //   if (base <= - (sliderWidth * (slideCount - 1))) {
-      //     e.preventDefault();
-      //   } else {
-      //     base = base - sliderWidth;
-      //   }
-      //   cont.style.transform = `translateX(${base}px)`;
-      // })
+      this.typeContainer.map((cont) => {
+        this.arrowLeft.addEventListener('click', (e) => {
+          if(this.finalOptions.infinite) {
+            console.log('infinite true');
+          } else {
+            if (this.base >= 0) {
+              e.preventDefault();
+            } else {
+              this.base = this.base + this.sliderWidth;
+              
+            }
+            cont.style.transform = `translateX(${this.base}px)`;
+            this.slideIndex = -this.base / this.sliderWidth;
+
+            for(let i = 0; i < this.child.length; i++) {
+              this.child[i].classList.remove('active');
+              this.child[this.slideIndex].classList.add('active');
+            }
+          }
+        });
+
+        this.arrowRight.addEventListener('click', (e) => {
+          if(this.finalOptions.infinite) {
+            console.log('infinite true');
+          } else {
+            if (this.base <= - (this.sliderWidth * (this.slideCount - 1))) {
+              e.preventDefault();
+            } else {
+              this.base = this.base - this.sliderWidth;
+            }
+            cont.style.transform = `translateX(${this.base}px)`;
+            this.slideIndex = -this.base / this.sliderWidth;
+
+            for(let i = 0; i < this.child.length; i++) {
+              this.child[i].classList.remove('active');
+              this.child[this.slideIndex].classList.add('active');
+            }
+          }
+        });
+      });
+    }
+  };
+
+  buildDots() {
+    if (this.finalOptions.dots) {
+      this.dotsContainer = document.createElement('ul');
+      
+      this.dotsContainer.classList.add('dots');
+      this.wrapper.appendChild(this.dotsContainer);
+
+      for (let i = 0; i < this.slideCount; i++) {
+        const dot = document.createElement('span');
+        dot.classList.add('dot');
+        this.dotsContainer.appendChild(dot);
+      }
+    }
+  };
+
+  dotsHandler() {
+    if(this.finalOptions.dots) {
+      const dotBtn = [...document.getElementsByClassName('dot')];
+      const firstDot = dotBtn[0];
+      
+      firstDot.classList.add('active');
+
+      const setActiveDot = () => {
+        for (let i = 0; i < dotBtn.length; i++) {
+          dotBtn[i].classList.remove('active');
+          dotBtn[this.slideIndex].classList.add('active');
+        }
+      }
+
+      if(this.finalOptions.arrows) {
+        this.arrowLeft.addEventListener('click', setActiveDot);
+        this.arrowRight.addEventListener('click', setActiveDot);
+      }
+      
+
+      dotBtn.map((dot, index) => {
+        dot.addEventListener('click', () => {
+          for (let i = 0; i < dotBtn.length; i++) {
+            dotBtn[i].classList.remove('active');
+          }
+          dot.classList.add('active');
+
+          this.typeContainer.map((cont) => {
+            cont.style.transform = `translateX(${-index * this.sliderWidth}px)`;
+            for(let i = 0; i < this.child.length; i++) {
+              this.child[i].classList.remove('active');
+              this.child[index].classList.add('active');
+            }
+            this.base = -index * this.sliderWidth;
+          })
+        })
+      })
     }
   };
 }
@@ -157,6 +184,9 @@ const imageSlider = new Slider('.slider-container',
   {
     arrows: true,
     dots: true,
-    slideSpeed: 2500,
+    slideSpeed: 1000,
     infinite: false,
-  })
+    arrowSelector: 'span',
+    arrowPrevText: 'Prev',
+  }
+);
