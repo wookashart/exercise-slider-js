@@ -80,44 +80,64 @@ class Slider {
     if(this.finalOptions.arrows) {
       this.base = 0;
       this.child[0].classList.add('active');
+      this.lastSlideIndex = this.slideCount - 1;
 
       this.typeContainer.map((cont) => {
         this.arrowLeft.addEventListener('click', (e) => {
-          if(this.finalOptions.infinite) {
-            console.log('infinite true');
-          } else {
-            if (this.base >= 0) {
-              e.preventDefault();
-            } else {
-              this.base = this.base + this.sliderWidth;
-              
-            }
-            cont.style.transform = `translateX(${this.base}px)`;
-            this.slideIndex = -this.base / this.sliderWidth;
+          this.lastSlideIndex = this.lastSlideIndex === -1 ? this.lastSlideIndex + this.slideCount : this.lastSlideIndex;
 
-            for(let i = 0; i < this.child.length; i++) {
-              this.child[i].classList.remove('active');
-              this.child[this.slideIndex].classList.add('active');
+          if (this.base >= 0) {
+            if(this.finalOptions.infinite) {
+              this.slideIndex = -this.base / this.sliderWidth;
+              this.lastSlide = this.child[this.lastSlideIndex];
+  
+              cont.insertBefore(this.child[this.lastSlideIndex], this.child[this.base]);
+              this.lastSlideIndex --;
+              this.base = this.lastSlideIndex + 1;
+  
+              for(let i = 0; i < this.child.length; i++) {
+                this.child[i].classList.remove('active');
+                this.child[this.base].classList.add('active');
+              }
+
+              // cont.style.transform = `translateX(${this.base + this.sliderWidth}px)`;
+              console.log(this.base);
+
+            } else {
+              e.preventDefault();  
             }
+          } else {
+            this.base = this.base + this.sliderWidth;
+          }
+
+          cont.style.transform = `translateX(${this.base}px)`;
+          this.slideIndex = -this.base / this.sliderWidth;
+
+          for(let i = 0; i < this.child.length; i++) {
+            this.child[i].classList.remove('active');
+            this.child[this.slideIndex].classList.add('active');
           }
         });
 
         this.arrowRight.addEventListener('click', (e) => {
-          if(this.finalOptions.infinite) {
-            console.log('infinite true');
-          } else {
-            if (this.base <= - (this.sliderWidth * (this.slideCount - 1))) {
-              e.preventDefault();
+          if (this.base <= - (this.sliderWidth * (this.slideCount - 1))) {
+            if(this.finalOptions.infinite) {
+              this.slideIndex = -this.base / this.sliderWidth;
+              console.log(this.slideIndex);
+  
             } else {
-              this.base = this.base - this.sliderWidth;
+              e.preventDefault();
             }
-            cont.style.transform = `translateX(${this.base}px)`;
-            this.slideIndex = -this.base / this.sliderWidth;
+          } else {
+            this.base = this.base - this.sliderWidth;
+          }
 
-            for(let i = 0; i < this.child.length; i++) {
-              this.child[i].classList.remove('active');
-              this.child[this.slideIndex].classList.add('active');
-            }
+          cont.style.transform = `translateX(${this.base}px)`;
+          this.slideIndex = -this.base / this.sliderWidth;
+
+          for(let i = 0; i < this.child.length; i++) {
+            this.child[i].classList.remove('active');
+            this.child[this.slideIndex].classList.add('active');
           }
         });
       });
@@ -157,7 +177,6 @@ class Slider {
         this.arrowLeft.addEventListener('click', setActiveDot);
         this.arrowRight.addEventListener('click', setActiveDot);
       }
-      
 
       dotBtn.map((dot, index) => {
         dot.addEventListener('click', () => {
@@ -183,9 +202,9 @@ class Slider {
 const imageSlider = new Slider('.slider-container',
   {
     arrows: true,
-    dots: true,
+    dots: false,
     slideSpeed: 1000,
-    infinite: false,
+    infinite: true,
     arrowSelector: 'span',
     arrowPrevText: 'Prev',
   }
